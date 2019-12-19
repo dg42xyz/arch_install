@@ -59,6 +59,7 @@ pacstrap /mnt base base-devel linux linux-firmware vi vim git efibootmgr dialog 
 
 # Generate fstab file
 genfstab -pU /mnt >> /mnt/etc/fstab
+
 # Make /tmp a ramdisk
 echo 'tmpfs	/tmp	tmpfs	defaults,noatime,mode=1777	0	0' >> /mnt/etc/fstab
 
@@ -158,6 +159,3 @@ swapoff -a
 
 # Reboot into the new system
 reboot
-
-# Post installation
-# TODO
