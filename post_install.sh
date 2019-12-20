@@ -9,13 +9,13 @@ cat PKGBUILD
 makepkg -si
 
 # Install generic packages
-pacman -S bash-completion lsof pacman-contrib
+pacman -S bash-completion lsof pacman-contrib htop
 
 # Install compression tools
 pacman -S zip unzip unrar
 
 # Install network tools
-pacman -S rsync traceroute bind-tools speedtest-cli openvpn macchanger
+pacman -S rsync traceroute bind-tools speedtest-cli openssh openvpn macchanger
 
 # Install services
 pacman -S networkmanager xdg-user-dirs
@@ -69,8 +69,11 @@ systemctl enable lightdm
 # Install themes
 pacman -S arc-icon-theme arc-gtk-theme papirus-icon-theme
 
+# Install dev tools
+pacman -S code terraform packer aws-cli python-pip nodejs npm ruby-irb
+
 # Install other apps
-pacman -S chromium firefox transmission-gtk virtualbox rhythmbox gedit gedit-plugins pidgin pidgin-otr vlc code terraform packer nodejs gnome-screenshot keepassxc youtube-dl
+pacman -S chromium firefox transmission-gtk virtualbox rhythmbox gedit gedit-plugins pidgin pidgin-otr vlc gnome-screenshot keepassxc youtube-dl ffmpeg kleopatra libreoffice-fresh gparted gimp
 
 # Install other apps from AUR
 yay -S pix
@@ -81,3 +84,4 @@ yay -S pacman-cleanup-hook
 yay -S powershell
 yay -S zoom
 yay -S pidgin-sipe
+yay -S caffeine-ng
