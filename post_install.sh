@@ -40,7 +40,9 @@ pacman -S xorg-server xorg-xinit
 pacman -S font-bh-ttf font-bitstream-speedo gsfonts sdl_ttf ttf-bitstream-vera ttf-dejavu ttf-liberation xorg-fonts-type1
 
 # Install video driver
+lspci | grep -e VGA -e 3D
 pacman -Ssq xf86-video
+pacman -S xf86-video-intel
 
 # Install printer config
 pacman -S system-config-printer
@@ -65,10 +67,10 @@ systemctl restart lightdm.service
 systemctl enable lightdm
 
 # Install themes
-pacman -S arc-gtk-theme papirus-icon-theme
+pacman -S arc-icon-theme arc-gtk-theme papirus-icon-theme
 
 # Install other apps
-pacman -S chromium firefox transmission virtualbox rhythmbox gedit gedit-plugins pidgin vlc code terraform packer nodejs gnome-screenshot
+pacman -S chromium firefox transmission-gtk virtualbox rhythmbox gedit gedit-plugins pidgin pidgin-otr vlc code terraform packer nodejs gnome-screenshot keepassxc youtube-dl
 
 # Install other apps from AUR
 yay -S pix
@@ -78,3 +80,4 @@ yay -S postman-bin
 yay -S pacman-cleanup-hook
 yay -S powershell
 yay -S zoom
+yay -S pidgin-sipe

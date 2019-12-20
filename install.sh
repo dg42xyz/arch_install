@@ -51,7 +51,7 @@ curl -o /etc/pacman.d/mirrorlist "https://www.archlinux.org/mirrorlist/?country=
 sed -i 's/\#Server/Server/g' /etc/pacman.d/mirrorlist
 
 # Install essential packages and optional tools
-pacstrap /mnt base base-devel linux linux-firmware vi vim efibootmgr dialog wpa_supplicant iw lvm2
+pacstrap /mnt base base-devel linux linux-firmware vi vim efibootmgr lvm2 dialog wpa_supplicant iw dhcpcd netctl git
 
 # Generate fstab file
 genfstab -pU /mnt >> /mnt/etc/fstab
