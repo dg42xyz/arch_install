@@ -16,17 +16,15 @@ timedatectl set-ntp true
 
 # Partition the disks
 cgdisk /dev/nvme0n1
-# 1 512MB EFI partition # Hex code ef00
-# 2 512MB Boot partition # Hex code 8300
-# 3 100% size partiton # (to be encrypted) Hex code 8300
+# 1 512MB EFI partition - Hex code ef00
+# 2 100% size partiton (to be encrypted) - Hex code 8300
 
 # Format the partitions
 mkfs.vfat -F32 /dev/nvme0n1p1
-mkfs.ext2 /dev/nvme0n1p2
 
 # Setup the encryption of the system
-cryptsetup -c aes-xts-plain64 -s 512 -y --use-random luksFormat /dev/nvme0n1p3
-cryptsetup luksOpen /dev/nvme0n1p3 luks
+cryptsetup -c aes-xts-plain64 -s 512 -y --use-random luksFormat /dev/nvme0n1p2
+cryptsetup luksOpen /dev/nvme0n1p2 luks
 
 # Create encrypted partitions
 pvcreate /dev/mapper/luks
@@ -42,20 +40,18 @@ mkswap /dev/mapper/vg0-swap
 
 # Mount the file systems
 mount /dev/mapper/vg0-root /mnt
-swapon /dev/mapper/vg0-swap
 mkdir /mnt/boot
-mount /dev/nvme0n1p2 /mnt/boot
-mkdir /mnt/boot/efi
-mount /dev/nvme0n1p1 /mnt/boot/efi
+mount /dev/nvme0n1p1 /mnt/boot
 mkdir /mnt/home
 mount /dev/mapper/vg0-home /mnt/home
+swapon /dev/mapper/vg0-swap
 
 # Select the mirrors
 curl -o /etc/pacman.d/mirrorlist "https://www.archlinux.org/mirrorlist/?country=US&protocol=https&ip_version=4&use_mirror_status=on"
 sed -i 's/\#Server/Server/g' /etc/pacman.d/mirrorlist
 
 # Install essential packages and optional tools
-pacstrap /mnt base base-devel linux linux-firmware vi vim git efibootmgr dialog wpa_supplicant iw sudo binutils
+pacstrap /mnt base base-devel linux linux-firmware vi vim efibootmgr dialog wpa_supplicant iw lvm2
 
 # Generate fstab file
 genfstab -pU /mnt >> /mnt/etc/fstab
@@ -102,42 +98,46 @@ passwd dg
 dd bs=512 count=8 if=/dev/random of=/boot/crypto_keyfile.bin iflag=fullblock
 chmod 600 /boot/crypto_keyfile.bin
 chmod 600 /boot/initramfs-linux*
-cryptsetup luksAddKey /dev/mapper/luks /boot/crypto_keyfile.bin
+cryptsetup luksAddKey /dev/nvme0n1p2 /boot/crypto_keyfile.bin
 
 # Configure mkinitcpio
 vim /etc/mkinitcpio.conf
 # MODULES=(ext4 i915)
 # HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt sd-lvm2 resume filesystems fsck)
-# FILES=(/crypto_keyfile.bin)
+# FILES=(/boot/crypto_keyfile.bin)
 
 # Regenerate mkinitcpio/initramfs image
 mkinitcpio -p linux
 
 # Set up systemd-boot
-bootctl --path=/boot/efi install
+bootctl --path=/boot install
 
 # Enable Intel microcode updates
 pacman -S intel-ucode
 
 # Create boot loader entry
-UUID=$(echo $(blkid | grep nvme0n1p3 | cut -d '"' -f 2))
-cat <<EOF > /boot/efi/loader/entries/arch.conf
+UUID=$(echo $(blkid | grep nvme0n1p2 | cut -d '"' -f 2))
+cat <<EOF > /boot/loader/entries/arch.conf
 title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /intel-ucode.img
 initrd  /initramfs-linux.img
 options rd.luks.uuid=#UUID rd.luks.key=/boot/crypto_keyfile.bin root=/dev/mapper/vg0-root resume=/dev/mapper/vg0-swap quiet mem_sleep_default=deep rw splash
 EOF
-sed -i "s/\#UUID/$UUID/g" /boot/efi/loader/entries/arch.conf
+sed -i "s/\#UUID/$UUID/g" /boot/loader/entries/arch.conf
 
 # Loader configuration
-cat <<EOF > /boot/efi/loader/loader.conf
+cat <<EOF > /boot/loader/loader.conf
 default  arch
 timeout  5
 editor   no
 EOF
 
+# Update systemd-boot
+bootctl --path=/boot update
+
 # Create systemd-boot-pacman hook
+mkdir /etc/pacman.d/hooks
 cat <<EOF > /etc/pacman.d/hooks/systemd-boot.hook
 [Trigger]
 Type = Package
@@ -147,7 +147,7 @@ Target = systemd
 [Action]
 Description = Updating systemd-boot...
 When = PostTransaction
-Exec = /usr/bin/bootctl --path=/boot/efi update
+Exec = /usr/bin/bootctl --path=/boot update
 EOF
 
 # Exit chroot
