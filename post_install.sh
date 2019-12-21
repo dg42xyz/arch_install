@@ -57,7 +57,7 @@ pacman -S lightdm-gtk-greeter
 yay -S lightdm-slick-greeter
 yay -S lightdm-settings
 
-# Edit /etc/lightdm/lightdb.conf, uncomment and change to
+# Edit /etc/lightdm/lightdm.conf, uncomment and change to
 greeter-session=lightdm-slick-greeter
 
 # Restart lightdm service
@@ -70,7 +70,7 @@ systemctl enable lightdm
 pacman -S arc-icon-theme arc-gtk-theme papirus-icon-theme
 
 # Install dev tools
-pacman -S code terraform packer aws-cli python-pip nodejs npm ruby-irb
+pacman -S code terraform packer aws-cli python-pip nodejs npm ruby-irb ansible
 
 # Install other apps
 pacman -S chromium firefox transmission-gtk virtualbox rhythmbox gedit gedit-plugins pidgin pidgin-otr vlc gnome-screenshot keepassxc youtube-dl ffmpeg kleopatra libreoffice-fresh gparted gimp
